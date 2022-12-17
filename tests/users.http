@@ -1,0 +1,12 @@
+### Создание пользователя
+POST http://localhost:8000/users
+Content-Type: application/json
+
+{
+    "username": "Andrew2",
+    "password": "passwd"
+}
+
+### Получение информации о пользователе
+GET http://localhost:8000/users/5
+Content-Type: application/json

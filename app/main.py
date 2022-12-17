@@ -1,9 +1,8 @@
 from fastapi import FastAPI
 from .db import db
-from .models import User as UserModel
-from .schema import User as UserSchema
+from app.api.v1.users.routes import router as users_router
 
-app = FastAPI(debug=True)
+app = FastAPI(debug=False)
 
 
 @app.on_event("startup")
@@ -16,18 +15,9 @@ async def shutdown():
 	await db.disconnect()
 
 
+app.include_router(users_router, prefix="/users")
+
+
 @app.get("/")
 def hello():
 	return {"hello": "world"}
-
-
-@app.post("/users/")
-async def create_user(user: UserSchema):
-	user_id = await UserModel.create(**user.dict())
-	return {"user_id": user_id}
-
-
-@app.get("/users/{id}", response_model=UserSchema)
-async def get_user(id: int):
-	user = await UserModel.get(idx=id)
-	return UserSchema(**user).dict()

@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
-from app.users.models import metadata as users_metadata
+from app.api.v1.users.models import metadata as users_metadata
 
 
 load_dotenv()

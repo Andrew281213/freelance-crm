@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Авторизация{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row justify-content-center d-flex">
+            <div class="col-md-6">
+                <form method="post" class="px-5 py-5">
+                    <div class="text-danger font-weight-bold">
+                        {% for error in errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="inputEmail" class="form-label">Email</label>
+                        <input type="text" class="form-control" id="inputEmail1" aria-describedby="emailHelp"
+                               autofocus required minlength="5" maxlength="64" autocomplete="none" name="username"
+                               value="{{ email }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="inputPassword" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="inputPassword" required minlength="5"
+                               name="password" value="{{ password }}">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

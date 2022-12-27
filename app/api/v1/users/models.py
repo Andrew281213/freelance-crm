@@ -1,7 +1,9 @@
 from app.db import db, metadata
-from sqlalchemy import Table, Column, Integer, String, Boolean
-from .schemas import UserCreate
-
+from sqlalchemy import Table, Column, Integer, String, Boolean, DateTime, ForeignKey, text, and_
+from sqlalchemy.dialects.postgresql import UUID
+from .schemas import UserCreate, UserPublic, UserInDB
+from datetime import datetime, timedelta
+from asyncpg.exceptions import DataError
 
 users = Table(
 	"users",
@@ -19,18 +21,6 @@ users = Table(
 
 class User:
 	@classmethod
-	async def get(cls, id):
-		"""Получает информацию о пользователе из бд
-
-		:param int id: ID пользователя
-		:return: Информация о пользователе
-		:rtype: dict
-		"""
-		query = users.select().where(users.c.id == id)
-		user = await db.fetch_one(query)
-		return user
-
-	@classmethod
 	async def create(cls, user):
 		"""Записывает данные о новом пользователе в бд
 
@@ -41,3 +31,31 @@ class User:
 		query = users.insert().values(**user.dict())
 		user_id = await db.execute(query)
 		return user_id
+
+	@classmethod
+	async def get(cls, id):
+		"""Получает информацию о пользователе из бд
+
+		:param int id: ID пользователя
+		:return: Информация о пользователе
+		:rtype: UserInDB
+		"""
+		query = users.select().where(users.c.id == id)
+		user = await db.fetch_one(query)
+		if user is not None:
+			return UserInDB(**user)
+		return None
+
+	@classmethod
+	async def get_by_username(cls, username):
+		"""Получает информацию о пользователе из бд
+
+		:param str username: Имя пользователя
+		:return: Информация о пользователе
+		:rtype: UserInDB
+		"""
+		query = users.select().where(users.c.username == username)
+		user = await db.fetch_one(query)
+		if user is not None:
+			return UserInDB(**user)
+		return None

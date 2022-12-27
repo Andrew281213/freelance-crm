@@ -1,12 +1,20 @@
 ### Создание пользователя
-POST http://localhost:8000/users
+POST http://localhost:8000/api/v1/users
 Content-Type: application/json
 
 {
-    "username": "Andrew2",
-    "password": "passwd"
+	"username": "admin",
+	"password": "admin123"
 }
 
-### Получение информации о пользователе
-GET http://localhost:8000/users/5
+### Авторизация
+POST http://localhost:8000/api/v1/users/login
 Content-Type: application/json
+
+{
+	"username": "admin",
+	"password": "admin123"
+}
+
+### Проверка авторизации
+GET http://localhost:8000/api/v1/users/me/

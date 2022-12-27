@@ -1,9 +1,7 @@
+from sqlalchemy import Table, Column, Integer, String
+
 from app.db import db, metadata
-from sqlalchemy import Table, Column, Integer, String, Boolean, DateTime, ForeignKey, text, and_
-from sqlalchemy.dialects.postgresql import UUID
-from .schemas import UserCreate, UserPublic, UserInDB
-from datetime import datetime, timedelta
-from asyncpg.exceptions import DataError
+from .schemas import UserCreate, UserInDB
 
 users = Table(
 	"users",

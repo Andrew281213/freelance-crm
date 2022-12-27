@@ -1,7 +1,6 @@
-from app.base_schemas import CoreModel, IDModelMixin
-from pydantic import Field, ValidationError, validator, root_validator, UUID4
-from datetime import datetime
+from pydantic import Field, ValidationError, root_validator
 
+from app.base_schemas import CoreModel, IDModelMixin
 
 PASSWORD_MIN_LENGTH = 5
 PASSWORD_MAX_LENGTH = 64

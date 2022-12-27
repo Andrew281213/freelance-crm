@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from fastapi_jwt_auth.exceptions import AuthJWTException
 from pydantic import BaseModel
 from fastapi_jwt_auth import AuthJWT
@@ -10,6 +11,7 @@ from .api import router as api_router
 from .web import router as web_router
 
 app = FastAPI(debug=False)
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 app.include_router(api_router, prefix="/api")
 app.include_router(web_router)
 

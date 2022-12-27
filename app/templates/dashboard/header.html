@@ -1,0 +1,29 @@
+<nav class="navbar navbar-expand-lg bg-dark navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand col-md-1" href="{{ url_for('main') }}">Dashboard</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-3 mb-lg-0 row-cols-3">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.url == url_for('main') %}active{% endif %}"
+                       aria-current="page" href="{{ url_for('main') }}">Главная</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.url == url_for('orders') %}active{% endif %}"
+                       href="{{ url_for('orders') }}">Заказы</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.url == url_for('clients') %}active{% endif %}"
+                       href="{{ url_for('clients') }}">Клиенты</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link  {% if request.url == url_for('parsers') %}active{% endif %}"
+                       href="{{ url_for('parsers') }}">Парсеры</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>

@@ -1,13 +1,12 @@
 from datetime import timedelta
 
-from fastapi import APIRouter, HTTPException, Query, Depends, status
-from fastapi.security import OAuth2PasswordRequestForm
-from .schemas import UserPublic, UserCreate, UserBase
-from .models import User
-from app.utils.hasher import Hasher
 from asyncpg.exceptions import UniqueViolationError
+from fastapi import APIRouter, HTTPException, Depends
 from fastapi_jwt_auth import AuthJWT
-from fastapi_jwt_auth.exceptions import AuthJWTException
+
+from app.utils.hasher import Hasher
+from .models import User
+from .schemas import UserPublic, UserCreate
 
 router = APIRouter(
 	responses={

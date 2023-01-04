@@ -1,9 +1,8 @@
 from asyncpg import UniqueViolationError
 from sqlalchemy import Table, Column, Integer, String, Text, ForeignKey, PrimaryKeyConstraint
-from sqlalchemy.orm import relationship
 
 from app.db import db, metadata
-from .schemas import NicknameInDB, NicknameCreate, UrlCreate, UrlInDB, ClientCreate, ClientInDB
+from .schemas import NicknameInDB, NicknameCreate, NicknameUpdate, UrlCreate, UrlInDB, ClientCreate, ClientInDB
 
 clients_nicknames = Table(
 	"clients_nicknames",
@@ -56,7 +55,7 @@ class ClientNickname:
 		:return: ID ника из бд
 		:rtype: int
 		"""
-		query = clients_nicknames.insert().value(**nickname.dict())
+		query = clients_nicknames.insert().values(**nickname.dict())
 		nickname_id = await db.execute(query)
 		return nickname_id
 
@@ -69,7 +68,7 @@ class ClientNickname:
 		:rtype: NicknameInDB
 		"""
 		query = clients_nicknames.select().where(clients_nicknames.c.id == id)
-		nickname = await db.execute(query)
+		nickname = await db.fetch_one(query)
 		if nickname is not None:
 			return NicknameInDB(**nickname)
 		return None
@@ -87,6 +86,40 @@ class ClientNickname:
 		if nickname is not None:
 			return NicknameInDB(**nickname)
 		return None
+
+	@classmethod
+	async def update(cls, id, nickname):
+		"""Обновляет информацию о нике в бд
+
+		:param int id: Id ника
+		:param NicknameUpdate nickname: Новые данные о нике
+		:return: Информация о нике клиента
+		:rtype: NicknameInDB | None
+		"""
+		old_data = await ClientNickname.get(id)
+		if old_data is None:
+			return None
+		if nickname.nickname != old_data.nickname:
+			query = clients_nicknames.update().\
+				where(clients_nicknames.c.id == id).\
+				values(nickname=nickname.nickname)
+			await db.execute(query)
+		return await ClientNickname.get(id)
+
+	@classmethod
+	async def delete(cls, id):
+		"""Удалить ник
+
+		:param int id: Id ника
+		:return: Id удаленного ника или None, если ник не найден
+		:rtype: int | None
+		"""
+		nickname = await ClientNickname.get(id)
+		if nickname is None:
+			return None
+		query = clients_nicknames.delete().where(clients_nicknames.c.id == id)
+		await db.execute(query)
+		return id
 
 
 class ClientUrl:

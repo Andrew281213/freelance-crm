@@ -2,7 +2,8 @@ from asyncpg import UniqueViolationError
 from sqlalchemy import Table, Column, Integer, String, Text, ForeignKey, PrimaryKeyConstraint
 
 from app.db import db, metadata
-from .schemas import NicknameInDB, NicknameCreate, NicknameUpdate, UrlCreate, UrlInDB, ClientCreate, ClientInDB
+from .schemas import NicknameInDB, NicknameCreate, NicknameUpdate, UrlCreate, UrlInDB, UrlUpdate,\
+	ClientCreate, ClientInDB, ClientUpdate
 
 clients_nicknames = Table(
 	"clients_nicknames",
@@ -131,7 +132,7 @@ class ClientUrl:
 		:return: ID ссылки из бд
 		:rtype: int
 		"""
-		query = clients_urls.insert().value(**url.dict())
+		query = clients_urls.insert().values(**url.dict())
 		url_id = await db.execute(query)
 		return url_id
 
@@ -144,9 +145,9 @@ class ClientUrl:
 		:rtype: UrlInDB
 		"""
 		query = clients_urls.select().where(clients_urls.c.id == id)
-		url = await db.execute(query)
+		url = await db.fetch_one(query)
 		if url is not None:
-			return NicknameInDB(**url)
+			return UrlInDB(**url)
 		return None
 
 	@classmethod
@@ -162,6 +163,40 @@ class ClientUrl:
 		if url is not None:
 			return NicknameInDB(**url)
 		return None
+
+	@classmethod
+	async def update(cls, id, url):
+		"""Обновляет информацию о ссылке в бд
+
+		:param int id: Id ссылки
+		:param UrlUpdate url: Новые данные о ссылке
+		:return: Информация о ссылке клиента
+		:rtype: UrlInDB | None
+		"""
+		old_data = await ClientUrl.get(id)
+		if old_data is None:
+			return None
+		if url.url != old_data.url:
+			query = clients_urls.update(). \
+				where(clients_urls.c.id == id). \
+				values(url=url.url)
+			await db.execute(query)
+		return await ClientUrl.get(id)
+
+	@classmethod
+	async def delete(cls, id):
+		"""Удалить ссылку
+
+		:param int id: Id ссылки
+		:return: Id удаленной ссылки или None, если ссылка не найдена
+		:rtype: int | None
+		"""
+		url = await ClientUrl.get(id)
+		if url is None:
+			return None
+		query = clients_urls.delete().where(clients_urls.c.id == id)
+		await db.execute(query)
+		return id
 
 
 class Client:

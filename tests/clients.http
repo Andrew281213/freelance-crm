@@ -33,3 +33,28 @@ Content-Type: application/json
 DELETE http://localhost:8000/api/v1/clients/nicknames/2
 
 
+
+### Создание ссылки
+POST http://localhost:8000/api/v1/clients/urls
+Content-Type: application/json
+
+{
+	"url": "https://t.me/tanf93"
+}
+
+### Проверка созданной ссылки
+GET http://localhost:8000/api/v1/clients/urls/2
+
+### Изменение ссылки
+PUT http://localhost:8000/api/v1/clients/urls/2
+Content-Type: application/json
+
+{
+    "url": "https://t.me/tanf92"
+}
+
+### Удаление ссылки
+DELETE http://localhost:8000/api/v1/clients/urls/2
+
+
+

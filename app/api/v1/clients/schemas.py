@@ -44,13 +44,14 @@ class UrlPublic(IDModelMixin, UrlBase):
 
 class ClientBase(CoreModel):
 	nickname: str
-	comment: str | None = None
-	nicknames: list[str] | None = None
-	urls: list[str] | None = None
+	comment: str = ""
+	nicknames: list[NicknamePublic] = Field(default_factory=list)
+	urls: list[UrlPublic] = Field(default_factory=list)
 
 
 class ClientCreate(ClientBase):
-	pass
+	nicknames: list[int] = Field(default_factory=list)
+	urls: list[int] = Field(default_factory=list)
 
 
 class ClientUpdate(ClientBase):

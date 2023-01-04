@@ -1,9 +1,11 @@
+import json
+
 from asyncpg import UniqueViolationError
 from sqlalchemy import Table, Column, Integer, String, Text, ForeignKey, PrimaryKeyConstraint
 
 from app.db import db, metadata
-from .schemas import NicknameInDB, NicknameCreate, NicknameUpdate, UrlCreate, UrlInDB, UrlUpdate,\
-	ClientCreate, ClientInDB, ClientUpdate
+from .schemas import NicknameInDB, NicknameCreate, NicknameUpdate, UrlCreate, UrlInDB, UrlUpdate, \
+	ClientCreate, ClientInDB, ClientUpdate, NicknamePublic, UrlPublic
 
 clients_nicknames = Table(
 	"clients_nicknames",
@@ -38,7 +40,7 @@ clients_clients_nicknames = Table(
 
 
 clients_clients_urls = Table(
-	"client_client_urls",
+	"clients_clients_urls",
 	metadata,
 	Column("client_id", Integer, ForeignKey("clients.id"), nullable=False),
 	Column("url_id", Integer, ForeignKey("clients_urls.id"), nullable=False),
@@ -209,31 +211,49 @@ class Client:
 		:rtype: int
 		"""
 		async with db.transaction():
-			nickname_ids = []
-			if client.nicknames is not None and len(client.nicknames) > 0:
-				for nickname in client.nicknames:
-					try:
-						nickname_id = await ClientNickname.create(NicknameCreate(nickname=nickname))
-						if nickname_id is not None:
-							nickname_ids.append(nickname_id)
-					except UniqueViolationError:
-						continue
-			url_ids = []
-			if client.urls is not None and len(client.urls) > 0:
-				for url in client.urls:
-					try:
-						url_id = await ClientUrl.create(UrlCreate(url=url))
-						if url_id is not None:
-							url_ids.append(url_id)
-					except UniqueViolationError:
-						continue
 			query = clients.insert().values(nickname=client.nickname, comment=client.comment)
 			client_id = await db.execute(query)
-			# TODO: добавить проверку на существование ника
-			for nickname_id in nickname_ids:
+			for nickname_id in client.nicknames:
 				query = clients_clients_nicknames.insert().values(client_id=client_id, nickname_id=nickname_id)
 				await db.execute(query)
-			for url_id in url_ids:
-				query = clients_clients_urls.insert().values()
+			for url_id in client.urls:
+				query = clients_clients_urls.insert().values(client_id=client_id, url_id=url_id)
 				await db.execute(query)
 			return client_id
+
+	@classmethod
+	async def get(cls, id):
+		"""Получает информацию о клиенте из бд
+
+		:param int id: ID клиента
+		:return: Информация о клиенте
+		:rtype: ClientInDB
+		"""
+		# TODO: когда-нибудь переработать функцию...
+		query = """
+			select c.id, c.nickname, c.comment,
+			json_agg(json_strip_nulls(json_build_object('id', cn.id, 'nickname', cn.nickname))) nicknames,
+			json_agg(json_strip_nulls(json_build_object('id', cu.id, 'url', cu.url))) urls from clients c
+			left join clients_clients_nicknames ccn on c.id = ccn.client_id
+			left join clients_clients_urls ccu on c.id = ccu.client_id
+			left join clients_nicknames cn on ccn.nickname_id = cn.id
+			left join clients_urls cu on ccu.url_id = cu.id
+			where c.id = :id
+			group by c.id;
+		"""
+		client = await db.fetch_one(query, {"id": id})
+		client = dict(client)
+		nicknames = json.loads(client.get("nicknames", []))
+		client["nicknames"] = []
+		for nickname in nicknames:
+			if nickname.get("id") is not None:
+				client["nicknames"].append(NicknamePublic(**nickname))
+		urls = json.loads(client.get("urls", []))
+		client["urls"] = []
+		for url in urls:
+			url = dict(url)
+			if url.get("id") is not None:
+				client["urls"].append(UrlPublic(**url))
+		if client is not None:
+			return ClientInDB(**client)
+		return None

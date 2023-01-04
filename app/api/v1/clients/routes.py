@@ -1,3 +1,4 @@
+from asyncpg import ForeignKeyViolationError
 from fastapi import APIRouter, Depends, HTTPException
 from starlette import status
 
@@ -14,6 +15,7 @@ base_responses = {
 
 nicknames_router = APIRouter(responses=base_responses, prefix="/nicknames")
 urls_router = APIRouter(responses=base_responses, prefix="/urls")
+clients_router = APIRouter(responses=base_responses)
 
 
 @nicknames_router.get(
@@ -104,3 +106,32 @@ async def delete_url(id: int, jwt: AuthJWT = Depends()):
 	if url_id is None:
 		return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Ссылка не найдена")
 	return {"url_id": url_id}
+
+
+@clients_router.get(
+	"/{id}", response_model=ClientPublic, status_code=200,
+	description="Получить информацию о клиенте по id",
+	responses={
+		200: {
+			"description": "Успешный запрос"
+		}
+	}
+)
+async def get_client(id: int, jwt: AuthJWT = Depends()):
+	jwt.jwt_required()
+	client = await Client.get(id)
+	if client is None:
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Клиент не найдена")
+	return ClientPublic(**client.dict()).dict()
+
+
+@clients_router.post("/", status_code=status.HTTP_200_OK, description="Создать нового клиента")
+async def create_client(client: ClientCreate, jwt: AuthJWT = Depends()):
+	jwt.jwt_required()
+	try:
+		client_id = await Client.create(client)
+	except UniqueViolationError:
+		raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Такой клиент уже есть")
+	except ForeignKeyViolationError:
+		raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Неверно указаны id ников или ссылок")
+	return {"client_id": client_id}

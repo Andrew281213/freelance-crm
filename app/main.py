@@ -1,10 +1,11 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.staticfiles import StaticFiles
 from fastapi_jwt_auth.exceptions import AuthJWTException
 from pydantic import BaseModel
 from fastapi_jwt_auth import AuthJWT
+from starlette import status
 from starlette.requests import Request
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, RedirectResponse
 
 from .db import db
 from .api import router as api_router
@@ -39,7 +40,7 @@ async def shutdown():
 
 @app.exception_handler(AuthJWTException)
 def authjwt_exception_handler(request: Request, exc: AuthJWTException):
-	return JSONResponse(
-		status_code=exc.status_code,
-		content={"detail": "Требуется авторизация"}
-	)
+	response = RedirectResponse("/login", status_code=status.HTTP_302_FOUND)
+	response.delete_cookie("access_token")
+	response.delete_cookie("access_token_cookie")
+	return response

@@ -43,7 +43,7 @@ class UrlPublic(IDModelMixin, UrlBase):
 
 
 class ClientBase(CoreModel):
-	nickname: str
+	fio: str
 	comment: str = ""
 	nicknames: list[NicknamePublic] = Field(default_factory=list)
 	urls: list[UrlPublic] = Field(default_factory=list)

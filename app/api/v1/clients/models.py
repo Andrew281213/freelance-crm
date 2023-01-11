@@ -25,7 +25,7 @@ clients = Table(
 	"clients",
 	metadata,
 	Column("id", Integer, primary_key=True, index=True, autoincrement=True),
-	Column("nickname", String(length=64), index=True, unique=True, nullable=False, comment="Ник клиента"),
+	Column("fio", String(length=64), nullable=False, comment="ФИО клиента", server_default=""),
 	Column("comment", Text, nullable=True, comment="Комментарий")
 )
 
@@ -211,7 +211,7 @@ class Client:
 		:rtype: int
 		"""
 		async with db.transaction():
-			query = clients.insert().values(nickname=client.nickname, comment=client.comment)
+			query = clients.insert().values(fio=client.fio, comment=client.comment)
 			client_id = await db.execute(query)
 			for nickname_id in client.nicknames:
 				query = clients_clients_nicknames.insert().values(client_id=client_id, nickname_id=nickname_id)
@@ -231,7 +231,7 @@ class Client:
 		"""
 		# TODO: когда-нибудь переработать функцию...
 		query = """
-			select c.id, c.nickname, c.comment,
+			select c.id, c.fio, c.comment,
 			json_agg(json_strip_nulls(json_build_object('id', cn.id, 'nickname', cn.nickname))) nicknames,
 			json_agg(json_strip_nulls(json_build_object('id', cu.id, 'url', cu.url))) urls from clients c
 			left join clients_clients_nicknames ccn on c.id = ccn.client_id

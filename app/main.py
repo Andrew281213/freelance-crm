@@ -1,14 +1,14 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from fastapi_jwt_auth import AuthJWT
 from fastapi_jwt_auth.exceptions import AuthJWTException
 from pydantic import BaseModel
-from fastapi_jwt_auth import AuthJWT
 from starlette import status
 from starlette.requests import Request
-from starlette.responses import JSONResponse, RedirectResponse
+from starlette.responses import RedirectResponse
 
-from .db import db
 from .api import router as api_router
+from .db import db
 from .web import router as web_router
 
 app = FastAPI(debug=False)

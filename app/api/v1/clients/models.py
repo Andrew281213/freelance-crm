@@ -1,24 +1,29 @@
 import json
 
-from asyncpg import UniqueViolationError
 from sqlalchemy import Table, Column, Integer, String, Text, ForeignKey, PrimaryKeyConstraint
 
 from app.db import db, metadata
 from .schemas import NicknameInDB, NicknameCreate, NicknameUpdate, UrlCreate, UrlInDB, UrlUpdate, \
-	ClientCreate, ClientInDB, ClientUpdate, NicknamePublic, UrlPublic
+	ClientCreate, ClientInDB, NicknamePublic, UrlPublic
 
 clients_nicknames = Table(
 	"clients_nicknames",
 	metadata,
 	Column("id", Integer, primary_key=True, index=True, autoincrement=True),
-	Column("nickname", String(length=64), index=True, unique=True, nullable=False, comment="Ник клиента")
+	Column(
+		"nickname", String(length=64), index=True, unique=True, nullable=False,
+		comment="Ник клиента"
+	)
 )
 
 clients_urls = Table(
 	"clients_urls",
 	metadata,
 	Column("id", Integer, primary_key=True, index=True, autoincrement=True),
-	Column("url", String(length=255), unique=True, nullable=False, comment="Ссылка на страницу клиента")
+	Column(
+		"url", String(length=255), unique=True, nullable=False,
+		comment="Ссылка на страницу клиента"
+	)
 )
 
 clients = Table(
@@ -37,7 +42,6 @@ clients_clients_nicknames = Table(
 
 	PrimaryKeyConstraint("client_id", "nickname_id")
 )
-
 
 clients_clients_urls = Table(
 	"clients_clients_urls",
@@ -103,8 +107,8 @@ class ClientNickname:
 		if old_data is None:
 			return None
 		if nickname.nickname != old_data.nickname:
-			query = clients_nicknames.update().\
-				where(clients_nicknames.c.id == id).\
+			query = clients_nicknames.update(). \
+				where(clients_nicknames.c.id == id). \
 				values(nickname=nickname.nickname)
 			await db.execute(query)
 		return await ClientNickname.get(id)

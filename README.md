@@ -1,5 +1,8 @@
 # Freelance crm
 
+![](https://img.shields.io/static/v1?label=статус&message=в%20разработке&color=informational)
+
+
 Система для работы с заказами и клиентами на фрилансе.
 
 ## Основной функционал

@@ -14,14 +14,14 @@ router = APIRouter(include_in_schema=False)
 
 
 @router.get("/login")
-async def login(request: Request):
+async def get_login(request: Request):
 	if request.cookies.get("access_token_cookie") is not None:
 		return RedirectResponse("/", status_code=302)
 	return templates.TemplateResponse("users/login.html", {"request": request})
 
 
 @router.post("/login")
-async def login(request: Request, jwt: AuthJWT = Depends()):
+async def post_login(request: Request, jwt: AuthJWT = Depends()):
 	form = LoginForm(request)
 	await form.load_data()
 	if form.is_valid():

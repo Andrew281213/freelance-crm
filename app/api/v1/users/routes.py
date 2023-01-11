@@ -50,7 +50,9 @@ async def create_user(user: UserCreate):
 	return {"user_id": user_id}
 
 
-@router.post("/login", response_model=UserPublic, status_code=200, description="Авторизовать пользователя")
+@router.post(
+	"/login", response_model=UserPublic, status_code=200, description="Авторизовать пользователя"
+)
 async def login(user: UserCreate, jwt: AuthJWT = Depends()):
 	db_user = await User.get_by_username(username=user.username)
 	if db_user is None:

@@ -1,17 +1,16 @@
 from asyncpg import ForeignKeyViolationError
+from asyncpg.exceptions import UniqueViolationError
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi_jwt_auth import AuthJWT
 from starlette import status
 
-from .schemas import ClientCreate, UrlCreate, NicknameCreate, UrlPublic, ClientPublic, NicknamePublic, NicknameUpdate, \
-	UrlUpdate
 from .models import Client, ClientUrl, ClientNickname
-
-from fastapi_jwt_auth import AuthJWT
-from asyncpg.exceptions import UniqueViolationError
+from .schemas import ClientCreate, UrlCreate, NicknameCreate, UrlPublic, ClientPublic, \
+	NicknamePublic, NicknameUpdate, UrlUpdate
 
 base_responses = {
-		404: {"description": "Страница не найдена"},
-	}
+	404: {"description": "Страница не найдена"},
+}
 
 nicknames_router = APIRouter(responses=base_responses, prefix="/nicknames")
 urls_router = APIRouter(responses=base_responses, prefix="/urls")
@@ -31,26 +30,36 @@ async def get_nickname(id: int, jwt: AuthJWT = Depends()):
 	jwt.jwt_required()
 	nickname = await ClientNickname.get(id)
 	if nickname is None:
-		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ник не найден")
+		raise HTTPException(
+			status_code=status.HTTP_404_NOT_FOUND, detail="Ник не найден"
+		)
 	return NicknamePublic(**nickname.dict()).dict()
 
 
-@nicknames_router.post("/", status_code=status.HTTP_200_OK, description="Создать новый ник")
+@nicknames_router.post(
+	"/", status_code=status.HTTP_200_OK, description="Создать новый ник"
+)
 async def create_nickname(nickname: NicknameCreate, jwt: AuthJWT = Depends()):
 	jwt.jwt_required()
 	try:
 		nickname_id = await ClientNickname.create(nickname)
 	except UniqueViolationError:
-		raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Такой ник уже зарегистрирован")
+		raise HTTPException(
+			status_code=status.HTTP_409_CONFLICT, detail="Такой ник уже зарегистрирован"
+		)
 	return {"nickname_id": nickname_id}
 
 
-@nicknames_router.put("/{id}", status_code=status.HTTP_202_ACCEPTED, description="Изменить ник")
+@nicknames_router.put(
+	"/{id}", status_code=status.HTTP_202_ACCEPTED, description="Изменить ник"
+)
 async def change_nickname(id: int, nickname: NicknameUpdate, jwt: AuthJWT = Depends()):
 	jwt.jwt_required()
 	nickname = await ClientNickname.update(id=id, nickname=nickname)
 	if nickname is None:
-		return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Ник не найден")
+		return HTTPException(
+			status_code=status.HTTP_400_BAD_REQUEST, detail="Ник не найден"
+		)
 	return NicknamePublic(**nickname.dict()).dict()
 
 
@@ -59,7 +68,9 @@ async def delete_nickname(id: int, jwt: AuthJWT = Depends()):
 	jwt.jwt_required()
 	nickname_id = await ClientNickname.delete(id)
 	if nickname_id is None:
-		return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Ник не найден")
+		return HTTPException(
+			status_code=status.HTTP_400_BAD_REQUEST, detail="Ник не найден"
+		)
 	return {"nickname_id": nickname_id}
 
 
@@ -76,7 +87,9 @@ async def get_url(id: int, jwt: AuthJWT = Depends()):
 	jwt.jwt_required()
 	url = await ClientUrl.get(id)
 	if url is None:
-		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ссылка не найдена")
+		raise HTTPException(
+			status_code=status.HTTP_404_NOT_FOUND, detail="Ссылка не найдена"
+		)
 	return UrlPublic(**url.dict()).dict()
 
 
@@ -86,7 +99,9 @@ async def create_url(url: UrlCreate, jwt: AuthJWT = Depends()):
 	try:
 		url_id = await ClientUrl.create(url)
 	except UniqueViolationError:
-		raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Такая ссылка уже сохранена")
+		raise HTTPException(
+			status_code=status.HTTP_409_CONFLICT, detail="Такая ссылка уже сохранена"
+		)
 	return {"url_id": url_id}
 
 
@@ -95,7 +110,9 @@ async def change_url(id: int, url: UrlUpdate, jwt: AuthJWT = Depends()):
 	jwt.jwt_required()
 	url = await ClientUrl.update(id=id, url=url)
 	if url is None:
-		return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Ссылка не найдена")
+		return HTTPException(
+			status_code=status.HTTP_400_BAD_REQUEST, detail="Ссылка не найдена"
+		)
 	return UrlPublic(**url.dict()).dict()
 
 
@@ -104,7 +121,9 @@ async def delete_url(id: int, jwt: AuthJWT = Depends()):
 	jwt.jwt_required()
 	url_id = await ClientUrl.delete(id)
 	if url_id is None:
-		return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Ссылка не найдена")
+		return HTTPException(
+			status_code=status.HTTP_400_BAD_REQUEST, detail="Ссылка не найдена"
+		)
 	return {"url_id": url_id}
 
 
@@ -121,7 +140,9 @@ async def get_client(id: int, jwt: AuthJWT = Depends()):
 	jwt.jwt_required()
 	client = await Client.get(id)
 	if client is None:
-		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Клиент не найдена")
+		raise HTTPException(
+			status_code=status.HTTP_404_NOT_FOUND, detail="Клиент не найдена"
+		)
 	return ClientPublic(**client.dict()).dict()
 
 
@@ -131,7 +152,11 @@ async def create_client(client: ClientCreate, jwt: AuthJWT = Depends()):
 	try:
 		client_id = await Client.create(client)
 	except UniqueViolationError:
-		raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Такой клиент уже есть")
+		raise HTTPException(
+			status_code=status.HTTP_409_CONFLICT, detail="Такой клиент уже есть"
+		)
 	except ForeignKeyViolationError:
-		raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Неверно указаны id ников или ссылок")
+		raise HTTPException(
+			status_code=status.HTTP_400_BAD_REQUEST, detail="Неверно указаны id ников или ссылок"
+		)
 	return {"client_id": client_id}

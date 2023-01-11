@@ -1,5 +1,6 @@
+from pydantic import Field
+
 from app.base_schemas import CoreModel, IDModelMixin
-from pydantic import Field, ValidationError, root_validator
 
 
 class NicknameBase(CoreModel):

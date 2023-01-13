@@ -21,7 +21,7 @@ jobs:
       - name: Check running containers
         run: docker-compose ps -a
       - name: Check logs
-        run: docker-compose logs app
+        run: docker-compose logs web
       - name: Test with pytest
         env:
           COMPOSE_INTERACTIVE_NO_CLI: 1

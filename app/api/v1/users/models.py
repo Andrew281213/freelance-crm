@@ -3,6 +3,9 @@ from sqlalchemy import Table, Column, Integer, String
 from app.db import db, metadata
 from .schemas import UserCreate, UserInDB
 
+
+# TODO: добавить ограничение на минимальную длину ника
+
 users = Table(
 	"users",
 	metadata,

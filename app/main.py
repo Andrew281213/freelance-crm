@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi_jwt_auth import AuthJWT
@@ -5,14 +7,15 @@ from fastapi_jwt_auth.exceptions import AuthJWTException
 from pydantic import BaseModel
 from starlette import status
 from starlette.requests import Request
-from starlette.responses import RedirectResponse
+from starlette.responses import RedirectResponse, JSONResponse
 
 from .api import router as api_router
 from .db import db
 from .web import router as web_router
 
 app = FastAPI(debug=False)
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+app.mount("/static", StaticFiles(directory=os.path.join(base_dir, "app", "static")), name="static")
 app.include_router(api_router, prefix="/api")
 app.include_router(web_router)
 
@@ -40,6 +43,12 @@ async def shutdown():
 
 @app.exception_handler(AuthJWTException)
 def authjwt_exception_handler(request: Request, exc: AuthJWTException):
+	if request.url.path.find("/api/v1") > -1:
+		return JSONResponse(
+			{
+				"error": "Требуется авторизация"
+			}, status_code=status.HTTP_401_UNAUTHORIZED
+		)
 	response = RedirectResponse("/login", status_code=status.HTTP_302_FOUND)
 	response.delete_cookie("access_token")
 	response.delete_cookie("access_token_cookie")

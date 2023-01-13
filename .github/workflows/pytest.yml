@@ -10,8 +10,8 @@ jobs:
       - name: 'Create env file'
         run: |
           touch .env
-          echo DATABASE_URL=postgresql+psycopg2://postgres_user:postgres_password@db:5432/freelance_crm >> .env
-          echo TESTING_DATABASE_URL=postgresql+psycopg2://postgres_user:postgres_password@db:5432/freelance_crm_tests >> .env
+          echo DATABASE_URL=${{ secrets.DATABASE_URL }} >> .env
+          echo TESTING_DATABASE_URL=${{ secrets.TESTING_DATABASE_URL}} >> .env
           cat .env
 #      - name: Setup Python 3.10.9
 #        uses: actions/setup-python@v2.2.1

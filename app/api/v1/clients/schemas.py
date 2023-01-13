@@ -3,6 +3,9 @@ from pydantic import Field
 from app.base_schemas import CoreModel, IDModelMixin
 
 
+# TODO: добавить проверку на длину ника
+
+
 class NicknameBase(CoreModel):
 	nickname: str
 

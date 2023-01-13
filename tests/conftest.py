@@ -1,5 +1,7 @@
 import os
 
+from starlette import status
+
 os.environ["TESTING"] = "True"
 
 import pytest
@@ -9,6 +11,9 @@ from app.main import app
 from alembic import command
 from alembic.config import Config
 from sqlalchemy_utils import drop_database, create_database
+
+
+users_url = "/api/v1/users"
 
 
 # @pytest.fixture(scope="session")
@@ -30,7 +35,24 @@ def temp_db():
 		drop_database(os.environ.get("TESTING_DATABASE_URL"))
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def test_client(temp_db):
 	with TestClient(app) as client:
 		yield client
+
+
+@pytest.fixture(scope="module")
+def auth_headers(test_client):
+	logger.info("Создаю пользователя")
+	payload = {
+		"username": "test_logout1",
+		"password": "test123"
+	}
+	resp = test_client.post(users_url, json=payload)
+	assert resp.status_code == status.HTTP_200_OK, "Не соответствует статус-код при создании пользователя"
+	resp = test_client.post(users_url + "/login", json=payload)
+	headers = resp.headers.get("set-cookie")
+	assert headers is not None, "Не созданы куки при авторизации"
+	key, val = headers.split(";")[0].split("=")
+	headers = {key: val}
+	yield headers

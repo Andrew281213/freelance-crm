@@ -1,8 +1,11 @@
 import pytest
 from fastapi import status
+<<<<<<< HEAD
 from loguru import logger
 
 from app.api.v1.users import models
+=======
+>>>>>>> fae9498 (Добавлены тесты пользователей)
 
 users_url = "/api/v1/users"
 TIMEOUT = 5

@@ -1,15 +1,24 @@
+<<<<<<< HEAD
 
 import asyncio
+=======
+>>>>>>> fae9498 (Добавлены тесты пользователей)
 import os
 
 os.environ["TESTING"] = "True"
 
+<<<<<<< HEAD
 import databases
 import pytest
 import pytest_asyncio
 from fastapi.testclient import TestClient
 from loguru import logger
 from app import db
+=======
+import pytest
+from fastapi.testclient import TestClient
+from loguru import logger
+>>>>>>> fae9498 (Добавлены тесты пользователей)
 from app.main import app
 from alembic import command
 from alembic.config import Config

@@ -1,11 +1,5 @@
 import pytest
 from fastapi import status
-<<<<<<< HEAD
-from loguru import logger
-
-from app.api.v1.users import models
-=======
->>>>>>> fae9498 (Добавлены тесты пользователей)
 
 users_url = "/api/v1/users"
 TIMEOUT = 5
@@ -102,4 +96,3 @@ def test_get_me(test_client):
 	resp_data = resp.json()
 	assert resp_data.get("username") == payload.get("username"), "Не соответствует ник пользователя"
 	assert isinstance(resp_data.get("id"), int), "id пользователя не int"
-

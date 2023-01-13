@@ -2,7 +2,7 @@
 
 ![](https://img.shields.io/static/v1?label=status&message=in%20development&color=informational)
 ![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/andrew281213/freelance-crm/pylint.yml?branch=main)
-![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/andrew281213/freelance-crm/unit-tests.yml?label=tests)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/andrew281213/freelance-crm/pytest.yml?label=tests)
 
 Система для работы с заказами и клиентами на фрилансе.
 

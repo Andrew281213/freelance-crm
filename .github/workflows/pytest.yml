@@ -1,13 +1,6 @@
 name: Pytest
 
-on:
-  push:
-    branches:
-      - "master"
-
-  pull_request:
-    branches:
-      - "*"
+on: [ push ]
 
 jobs:
   build:

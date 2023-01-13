@@ -5,6 +5,9 @@ on: [ push ]
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      TESTING_DATABASE_URL: postgresql+psycopg2://postgres_user:postgres_password@db:5432/freelance_crm_tests
+      DATABASE_URL: postgresql+psycopg2://postgres_user:postgres_password@db:5432/freelance_crm
     steps:
       - uses: actions/checkout@v3
 #      - name: Setup Python 3.10.9

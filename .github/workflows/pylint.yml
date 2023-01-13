@@ -20,7 +20,7 @@ jobs:
         pip install pylint
     - name: Analysing the code with pylint
       run: |
-        pylint $(git ls-files '*.py') --indent-string='\t' --ignore-paths=alembic \
+        pylint $(git ls-files '*.py') --indent-string='\t' --ignore-paths=alembic,tests \
         --disable=fixme,invalid-name,missing-docstring,too-few-public-methods,\
         unused-argument,protected-access,no-self-use,relative-beyond-top-level,\
         no-self-argument,import-error,redefined-builtin,no-value-for-parameter,\

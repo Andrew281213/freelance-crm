@@ -65,9 +65,13 @@ async def create_user(user: UserCreate):
 async def login(user: UserCreate, jwt: AuthJWT = Depends()):
 	db_user = await User.get_by_username(username=user.username)
 	if db_user is None:
-		raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Неверно введен логин или пароль")
+		raise HTTPException(
+			status_code=status.HTTP_401_UNAUTHORIZED, detail="Неверно введен логин или пароль"
+		)
 	if not Hasher.verify_password(password=user.password, hashed_password=db_user.password):
-		raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Неверно введен логин или пароль")
+		raise HTTPException(
+			status_code=status.HTTP_401_UNAUTHORIZED, detail="Неверно введен логин или пароль"
+		)
 	access_token = jwt.create_access_token(subject=user.username, expires_time=timedelta(hours=12))
 	jwt.set_access_cookies(access_token)
 	return UserPublic(**db_user.dict()).dict()

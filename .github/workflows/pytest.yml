@@ -7,25 +7,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Setup Python 3.10.9
-        uses: actions/setup-python@v2.2.1
-        with:
-          python-version: 3.10.9
-      - name: Add environment vars in .env
-        run: |
-          echo DATABASE_URL=${{ secrets.DATABASE_URL }} >> .env
-          echo TESTING_DATABASE_URL=${{ secrets.TESTING_DATABASE_URL }} >> .env
-      - name: Set environment vars
-        run: for var in `cat .env` ; do echo "::set-env name=${var%%=*}::${var##*=}" ; done
+#      - name: Setup Python 3.10.9
+#        uses: actions/setup-python@v2.2.1
+#        with:
+#          python-version: 3.10.9
+#      - name: Add environment vars in .env
+#        run: |
+#          echo DATABASE_URL=${{ secrets.DATABASE_URL }} >> .env
+#          echo TESTING_DATABASE_URL=${{ secrets.TESTING_DATABASE_URL }} >> .env
+#      - name: Set environment vars
+#        run: for var in `cat .env` ; do echo "::set-env name=${var%%=*}::${var##*=}" ; done
       - name: docker-compose up
-        env:
-          SYSTEM_ENV: GITHUB_WORKFLOW
         run: docker-compose up -d
       - name: Check running containers
         run: docker-compose ps -a
       - name: Check logs
         run: docker-compose logs
       - name: Test with pytest
-        env:
-          SYSTEM_ENV: GITHUB_WORKFLOW
         run: docker-compose run --rm web pytest

@@ -7,8 +7,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Set up Python 3.10.9
-        uses: actions/setup-python@v2
+      - name: Setup Python 3.10.9
+        uses: actions/setup-python@v2.2.1
         with:
           python-version: 3.10.9
       - name: Add environment vars in .env

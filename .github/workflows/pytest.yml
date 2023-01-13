@@ -7,9 +7,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Add environment vars in .env
+        run: |
+          echo DATABASE_URL=${{ secrets.DATABASE_URL }} >> .env
+          echo TESTING_DATABASE_URL=${{ secrets.TESTING_DATABASE_URL }} >> .env
+      - name: Set environment vars
+        run: for var in `cat .env` ; do echo "::set-env name=${var%%=*}::${var##*=}" ; done
       - name: docker-compose up
         env:
-          DATABASE_URL: postgresql+psycopg2://postgres_user:postgres_password@db:5432/freelance_crm
+          SYSTEM_ENV: GITHUB_WORKFLOW
         run: docker-compose up -d
       - name: Check running containers
         run: docker-compose ps -a
@@ -17,5 +23,5 @@ jobs:
         run: docker-compose logs
       - name: Test with pytest
         env:
-          TESTING_DATABASE_URL: postgresql+psycopg2://postgres_user:postgres_password@db:5432/freelance_crm_tests
+          SYSTEM_ENV: GITHUB_WORKFLOW
         run: docker-compose run --rm web pytest

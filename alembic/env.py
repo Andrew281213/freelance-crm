@@ -8,9 +8,9 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from app.db import metadata
 
-from app.api.v1.users.models import users
-from app.api.v1.clients.models import clients_nicknames, clients_urls, clients, clients_clients_nicknames, \
-	clients_clients_urls
+from app.api.v1.users.models import *
+from app.api.v1.clients.models import *
+from app.api.v1.orders.models import *
 
 load_dotenv()
 

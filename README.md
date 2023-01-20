@@ -162,5 +162,5 @@
 [parsers-screen]: <> "Скрин страницы парсеров"
 [sql-db-users]: readme/users-table.png "Таблица пользователей"
 [sql-db-clients]: readme/clients-table.png "Таблицы пользователей"
-[sql-db-orders]: <> "Таблицы заказов"
+[sql-db-orders]: readme/orders-table.png "Таблицы заказов"
 [sql-db-market-projects]: <> "Таблицы настроек и данных парсеров"

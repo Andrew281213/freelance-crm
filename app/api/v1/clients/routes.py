@@ -1,14 +1,13 @@
-from asyncpg import ForeignKeyViolationError
-from asyncpg.exceptions import UniqueViolationError
-from fastapi import APIRouter, Depends, HTTPException
+from asyncpg.exceptions import UniqueViolationError, ForeignKeyViolationError
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi_jwt_auth import AuthJWT
-from starlette import status
 
 from .models import Client, ClientUrl, ClientNickname
 from .schemas import ClientCreate, UrlCreate, NicknameCreate, UrlPublic, ClientPublic, \
 	NicknamePublic, NicknameUpdate, UrlUpdate
 
 base_responses = {
+	200: {"description": "Успешный запрос"},
 	404: {"description": "Страница не найдена"},
 }
 
@@ -18,7 +17,7 @@ clients_router = APIRouter(responses=base_responses)
 
 
 @nicknames_router.get(
-	"/nicknames/{id}", response_model=NicknamePublic, status_code=200,
+	"/{id}", response_model=NicknamePublic, status_code=200,
 	description="Получить информацию о нике по id",
 	responses={
 		200: {
@@ -57,7 +56,7 @@ async def change_nickname(id: int, nickname: NicknameUpdate, jwt: AuthJWT = Depe
 	jwt.jwt_required()
 	nickname = await ClientNickname.update(id=id, nickname=nickname)
 	if nickname is None:
-		return HTTPException(
+		raise HTTPException(
 			status_code=status.HTTP_400_BAD_REQUEST, detail="Ник не найден"
 		)
 	return NicknamePublic(**nickname.dict()).dict()
@@ -68,7 +67,7 @@ async def delete_nickname(id: int, jwt: AuthJWT = Depends()):
 	jwt.jwt_required()
 	nickname_id = await ClientNickname.delete(id)
 	if nickname_id is None:
-		return HTTPException(
+		raise HTTPException(
 			status_code=status.HTTP_400_BAD_REQUEST, detail="Ник не найден"
 		)
 	return {"nickname_id": nickname_id}
@@ -110,7 +109,7 @@ async def change_url(id: int, url: UrlUpdate, jwt: AuthJWT = Depends()):
 	jwt.jwt_required()
 	url = await ClientUrl.update(id=id, url=url)
 	if url is None:
-		return HTTPException(
+		raise HTTPException(
 			status_code=status.HTTP_400_BAD_REQUEST, detail="Ссылка не найдена"
 		)
 	return UrlPublic(**url.dict()).dict()
@@ -121,7 +120,7 @@ async def delete_url(id: int, jwt: AuthJWT = Depends()):
 	jwt.jwt_required()
 	url_id = await ClientUrl.delete(id)
 	if url_id is None:
-		return HTTPException(
+		raise HTTPException(
 			status_code=status.HTTP_400_BAD_REQUEST, detail="Ссылка не найдена"
 		)
 	return {"url_id": url_id}

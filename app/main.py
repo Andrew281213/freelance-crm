@@ -10,12 +10,12 @@ from starlette.requests import Request
 from starlette.responses import RedirectResponse, JSONResponse
 
 from .api import router as api_router
+from .utils.utils import static_dir
 from .db import db
 from .web import router as web_router
 
 app = FastAPI(debug=False)
-base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-app.mount("/static", StaticFiles(directory=os.path.join(base_dir, "app", "static")), name="static")
+app.mount("/static", StaticFiles(directory=static_dir), name="static")
 app.include_router(api_router, prefix="/api")
 app.include_router(web_router)
 

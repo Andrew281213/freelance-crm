@@ -19,6 +19,8 @@ SQLAlchemy-Utils = "^0.39.0"
 passlib = "^1.7.4"
 Jinja2 = "^3.1.2"
 httpx = "^0.23.3"
+python-multipart = "^0.0.5"
+aiofiles = "^22.1.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.2.1"

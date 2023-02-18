@@ -12,6 +12,9 @@ jobs:
           touch .env
           echo DATABASE_URL=${{ secrets.DATABASE_URL }} >> .env
           echo TESTING_DATABASE_URL=${{ secrets.TESTING_DATABASE_URL}} >> .env
+          echo JWT_SECRET_KEY=123 >> .env
+          echo JWT_ALGORITHM=HS256 >> .env
+          echo JWT_TOKEN_EXPIRES_MINUTES=60 >> .env
           cat .env
 #      - name: Setup Python 3.10.9
 #        uses: actions/setup-python@v2.2.1

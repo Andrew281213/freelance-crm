@@ -2,6 +2,7 @@ version: "3"
 
 services:
   web:
+    container_name: freelance_crm_web
     build: .
     command: "bash -c 'while !</dev/tcp/db/5432; do sleep 1; done; uvicorn app.main:app --host 0.0.0.0 --reload'"
     stdin_open: true
@@ -13,6 +14,7 @@ services:
     depends_on:
       - db
   db:
+    container_name: freelance_crm_db
     image: postgres:15
     environment:
       - POSTGRES_USER=postgres_user

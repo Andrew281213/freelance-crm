@@ -9,7 +9,9 @@ TIMEOUT = 5
 def test_get_all_orders_without_auth(test_client):
 	resp = test_client.get(orders_url)
 	assert resp.status_code == status.HTTP_401_UNAUTHORIZED, "Должен быть доступ только после авторизации"
-	assert list(resp.json().keys()) == ["error"]
+	resp_data = resp.json()
+	assert list(resp_data.keys()) == ["detail"], "Неверный ключ: " + resp_data
+	assert resp_data["detail"] == "Not authenticated", "Неверная ошибка авторизации"
 
 
 def tset_get_all_orders_with_auth(test_client, auth_headers):

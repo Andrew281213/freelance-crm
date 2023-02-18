@@ -1,50 +1,87 @@
-from datetime import timedelta
-
 from asyncpg.exceptions import UniqueViolationError
 from fastapi import APIRouter, HTTPException, Depends, status
-from fastapi_jwt_auth import AuthJWT
+from fastapi.security import OAuth2PasswordRequestForm
 
-from app.utils.hasher import Hasher
 from .models import User
-from .schemas import UserPublic, UserCreate
+from .schemas import UserPublic, UserCreate, Token, UserInDB
+from .utils import Hasher
+from .utils import authenticate_user, create_access_token, get_current_user
 
-# TODO: привести ответы на невалидные запросы в порядок
-
-router = APIRouter(
-	responses={
-		404: {"description": "Страница не найдена"},
+base_responses = {
+	status.HTTP_200_OK: {
+		"description": "Успешный запрос"
+	},
+	status.HTTP_404_NOT_FOUND: {
+		"description": "Пользователь не найден",
+		"content": {
+			"application/json": {
+				"example": {"detail": "Пользователь с таким id не найден"}
+			}
+		}
+	},
+	status.HTTP_401_UNAUTHORIZED: {
+		"description": "Ошибка авторизации",
+		"content": {
+			"application/json": {
+				"example": {"detail": "Not authenticated"}
+			}
+		}
+	},
+	status.HTTP_422_UNPROCESSABLE_ENTITY: {
+		"description": "Ошибка валидации данных",
+		"content": {
+			"application/json": {
+				"example": {"detail": "Отсутствуют обязательные поля: password, username"}
+			}
+		}
 	}
-)
+}
+
+router = APIRouter()
 
 
 @router.get(
 	"/{id}", response_model=UserPublic, status_code=status.HTTP_200_OK,
 	description="Получить информацию о пользователе по id",
+	dependencies=[Depends(get_current_user)],
 	responses={
-		status.HTTP_200_OK: {
-			"description": "Успешный запрос",
-			"content": {
-				"application/json": {
-					"example": {
-						"id": 1, "username": "Admin"
-					}
-				}
-			}
-		}
+		status.HTTP_200_OK: base_responses[status.HTTP_200_OK],
+		status.HTTP_422_UNPROCESSABLE_ENTITY: base_responses[status.HTTP_422_UNPROCESSABLE_ENTITY],
+		status.HTTP_401_UNAUTHORIZED: base_responses[status.HTTP_401_UNAUTHORIZED],
+		status.HTTP_404_NOT_FOUND: base_responses[status.HTTP_404_NOT_FOUND],
 	}
 )
-async def get_user(id: int, jwt: AuthJWT = Depends()):
-	jwt.jwt_required()
+async def get_user(id: int):
 	user = await User.get(id=id)
 	if user is None:
 		raise HTTPException(
-			status_code=status.HTTP_404_NOT_FOUND, detail="Пользователь не найден"
+			status_code=status.HTTP_404_NOT_FOUND, detail="Пользователь с таким id не найден"
 		)
 	return user.dict()
 
 
 @router.post(
-	"/", status_code=status.HTTP_200_OK, description="Создать нового пользователя",
+	"/", status_code=status.HTTP_200_OK,
+	description="Создание нового пользователя",
+	responses={
+		status.HTTP_200_OK: {
+			"description": base_responses[status.HTTP_200_OK].get("description"),
+			"content": {
+				"application/json": {
+					"example": {"user_id": 1}
+				}
+			}
+		},
+		status.HTTP_422_UNPROCESSABLE_ENTITY: base_responses[status.HTTP_422_UNPROCESSABLE_ENTITY],
+		status.HTTP_409_CONFLICT: {
+			"description": "Пользователь с таким ником уже зарегистрирован",
+			"content": {
+				"application/json": {
+					"example": {"detail": "Пользователь с таким ником уже зарегистрирован"}
+				}
+			}
+		},
+	}
 )
 async def create_user(user: UserCreate):
 	user.password = Hasher.hash_password(user.password)
@@ -59,34 +96,36 @@ async def create_user(user: UserCreate):
 
 
 @router.post(
-	"/login", response_model=UserPublic, status_code=status.HTTP_200_OK,
-	description="Авторизовать пользователя"
+	"/token", response_model=Token,
+	responses={
+		status.HTTP_200_OK: base_responses[status.HTTP_200_OK],
+		status.HTTP_422_UNPROCESSABLE_ENTITY: base_responses[status.HTTP_422_UNPROCESSABLE_ENTITY],
+		status.HTTP_401_UNAUTHORIZED: base_responses[status.HTTP_401_UNAUTHORIZED],
+	}
 )
-async def login(user: UserCreate, jwt: AuthJWT = Depends()):
-	db_user = await User.get_by_username(username=user.username)
-	if db_user is None:
+async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+	user = await authenticate_user(
+		username=form_data.username, password=form_data.password
+	)
+	if not user:
 		raise HTTPException(
-			status_code=status.HTTP_401_UNAUTHORIZED, detail="Неверно введен логин или пароль"
+			status_code=status.HTTP_401_UNAUTHORIZED,
+			detail="Неверно введен логин или пароль",
+			headers={"WWW-Authenticate": "Bearer"}
 		)
-	if not Hasher.verify_password(password=user.password, hashed_password=db_user.password):
-		raise HTTPException(
-			status_code=status.HTTP_401_UNAUTHORIZED, detail="Неверно введен логин или пароль"
-		)
-	access_token = jwt.create_access_token(subject=user.username, expires_time=timedelta(hours=12))
-	jwt.set_access_cookies(access_token)
-	return UserPublic(**db_user.dict()).dict()
+	access_token = create_access_token(data={"sub": form_data.username})
+	return {"access_token": access_token, "token_type": "Bearer"}
 
 
-@router.delete("/logout")
-async def logout(jwt: AuthJWT = Depends()):
-	jwt.jwt_required()
-	jwt.unset_jwt_cookies()
-	return {"detail": "Выход успешно выполнен"}
-
-
-@router.get("/me/")
-async def get_me(jwt: AuthJWT = Depends()):
-	jwt.jwt_required()
-	username = jwt.get_jwt_subject()
-	current_user = await User.get_by_username(username)
-	return UserPublic(**current_user.dict())
+@router.get(
+	"/me/", status_code=status.HTTP_200_OK, response_model=UserPublic,
+	description="Вывод информации о текущем авторизованном пользователе",
+	responses={
+		status.HTTP_200_OK: base_responses[status.HTTP_200_OK],
+		status.HTTP_422_UNPROCESSABLE_ENTITY: base_responses[status.HTTP_422_UNPROCESSABLE_ENTITY],
+		status.HTTP_401_UNAUTHORIZED: base_responses[status.HTTP_401_UNAUTHORIZED],
+		status.HTTP_404_NOT_FOUND: base_responses[status.HTTP_404_NOT_FOUND],
+	}
+)
+async def get_me(user: UserInDB = Depends(get_current_user)):
+	return UserPublic(**user.dict())

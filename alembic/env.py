@@ -8,9 +8,9 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from app.db import metadata
 
-from app.api.v1.users.models import *
-from app.api.v1.clients.models import *
-from app.api.v1.orders.models import *
+from app.api.v1.users.models import metadata
+from app.api.v1.clients.models import metadata
+from app.api.v1.orders.models import metadata
 
 load_dotenv()
 

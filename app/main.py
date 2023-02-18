@@ -10,12 +10,12 @@ from starlette.responses import JSONResponse
 from .api import router as api_router
 from .db import db
 from .utils.utils import static_dir
-from .web import router as web_router
+# from .web import router as web_router
 
 app = FastAPI(debug=False)
 app.mount("/static", StaticFiles(directory=static_dir), name="static")
 app.include_router(api_router, prefix="/api")
-app.include_router(web_router)
+# app.include_router(web_router)
 app.add_middleware(
 	CORSMiddleware,
 	allow_origins=["http://localhost:8080"],

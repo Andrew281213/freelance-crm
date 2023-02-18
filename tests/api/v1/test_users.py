@@ -7,9 +7,7 @@ TIMEOUT = 5
 
 def test_not_auth_to_auth_required(test_client):
 	resp = test_client.get(users_url + "/1", timeout=TIMEOUT)
-	assert resp.status_code == status.HTTP_401_UNAUTHORIZED, "Не соответствует статус-код"
-	resp = test_client.delete(users_url + "/logout", timeout=TIMEOUT)
-	assert resp.status_code == status.HTTP_401_UNAUTHORIZED, "Не соответствует статус-код"
+	assert resp.status_code == status.HTTP_401_UNAUTHORIZED, "Не соответствует статус-код получения по id"
 	resp = test_client.get(users_url + "/me/", timeout=TIMEOUT)
 	assert resp.status_code == status.HTTP_401_UNAUTHORIZED, "Не соответствует статус-код"
 
@@ -38,45 +36,19 @@ def test_good_login_user(test_client):
 	}
 	resp = test_client.post(users_url, json=payload, timeout=TIMEOUT)
 	assert resp.status_code == status.HTTP_200_OK, "Не соответствует статус-код при создании пользователя"
-	resp = test_client.post(users_url + "/login", json=payload)
+	resp = test_client.post(users_url + "/token", data=payload)
 	assert resp.status_code == status.HTTP_200_OK, "Не соответствует статус-код при авторизации"
 	resp_data = resp.json()
-	assert list(resp_data.keys()) == ["username", "id"], "Не соответствуют ключи ответа"
-	assert resp_data.get("username") == payload.get("username"), "Не соответствует ник пользователя"
-	assert isinstance(resp_data.get("id"), int), "id пользователя не int"
-	assert resp.headers.get("set-cookie", "").find("access_token") > -1, "Не найдено поле jwt токена в заголовках"
+	assert list(resp_data.keys()).sort() == ["access_token", "token_type"].sort(), "Не соответствуют ключи ответа"
 
 
 @pytest.mark.parametrize("payload,status_code", (
-		({"username": "estsdfjksdjl", "password": "fkjsldjfl"}, status.HTTP_401_UNAUTHORIZED),
-		({"username": "fkjsldkfjsldf", "password": "11"}, status.HTTP_422_UNPROCESSABLE_ENTITY)
+		({"username": "estsdfjksdjl", "password": "fkjsldjfl3123"}, status.HTTP_401_UNAUTHORIZED),
+		({"username": "fkjsldkfjsldf", "password": "11"}, status.HTTP_401_UNAUTHORIZED)
 ))
 def test_bad_login_user(test_client, payload, status_code):
-	resp = test_client.post(users_url + "/login", json=payload)
-	assert resp.status_code == status_code, "Не соответствует статус-код"
-
-
-def test_logout_user(test_client):
-	payload = {
-		"username": "test_logout1",
-		"password": "test123"
-	}
-	resp = test_client.post(users_url, json=payload, timeout=TIMEOUT)
-	assert resp.status_code == status.HTTP_200_OK, "Не соответствует статус-код при создании пользователя"
-	resp = test_client.post(users_url + "/login", json=payload)
-	headers = resp.headers.get("set-cookie")
-	assert headers is not None, "Не созданы куки при авторизации"
-	key, val = headers.split(";")[0].split("=")
-	headers = {key: val}
-	resp = test_client.delete(users_url + "/logout", headers=headers)
-	assert resp.status_code == status.HTTP_200_OK
-	cookies = []
-	for headers in resp.headers.get("set-cookie").split(","):
-		if headers.find('=""') == -1:
-			continue
-		cookie, _ = headers.split(";")
-		cookies.append(cookie)
-	assert 'access_token_cookie=""' in cookies, "Куки авторизации не удалены"
+	resp = test_client.post(users_url + "/token", data=payload)
+	assert resp.status_code == status_code, "Не соответствует статус-код: " + str(resp.status_code) + resp.text
 
 
 def test_get_me(test_client):
@@ -86,11 +58,11 @@ def test_get_me(test_client):
 	}
 	resp = test_client.post(users_url, json=payload, timeout=TIMEOUT)
 	assert resp.status_code == status.HTTP_200_OK, "Не соответствует статус-код при создании пользователя"
-	resp = test_client.post(users_url + "/login", json=payload)
-	headers = resp.headers.get("set-cookie")
-	assert headers is not None, "Не созданы куки при авторизации"
-	key, val = headers.split(";")[0].split("=")
-	headers = {key: val}
+	resp = test_client.post(users_url + "/token", data=payload)
+	resp_data = resp.json()
+	headers = {
+		"Authorization": f"{resp_data['token_type']} {resp_data['access_token']}"
+	}
 	resp = test_client.get(users_url + "/me/", headers=headers)
 	assert resp.status_code == status.HTTP_200_OK, "Не соответствует статус-код при запросе данных о текущем пользователе"
 	resp_data = resp.json()

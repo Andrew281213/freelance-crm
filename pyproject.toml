@@ -12,7 +12,6 @@ SQLAlchemy = "^1.4.46"
 psycopg2-binary = "^2.9.5"
 databases = {extras = ["postgresql"], version = "^0.7.0"}
 uvicorn = "^0.20.0"
-fastapi-jwt-auth = "^0.5.0"
 python-dotenv = "^0.21.0"
 loguru = "^0.6.0"
 SQLAlchemy-Utils = "^0.39.0"
@@ -21,6 +20,7 @@ Jinja2 = "^3.1.2"
 httpx = "^0.23.3"
 python-multipart = "^0.0.5"
 aiofiles = "^22.1.0"
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.2.1"

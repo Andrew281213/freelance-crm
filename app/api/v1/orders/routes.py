@@ -1,9 +1,9 @@
 from asyncpg import ForeignKeyViolationError
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi_jwt_auth import AuthJWT
 
 from .models import Order
 from .schemas import OrderCreate, OrderPublic
+from ..users.utils import get_current_user
 
 DATETIME_FORMAT = "%d.%m.%Y %H:%M"
 
@@ -21,10 +21,9 @@ order_files_router = APIRouter(responses=base_responses)
 @orders_router.get(
 	"/", response_model=list[OrderPublic], status_code=status.HTTP_200_OK,
 	description="Получить список заказов",
-
+	dependencies=[Depends(get_current_user)]
 )
-async def get_orders(jwt: AuthJWT = Depends()):
-	jwt.jwt_required()
+async def get_orders():
 	orders = await Order.get_all()
 	data = []
 	for order in orders:
@@ -44,10 +43,10 @@ async def get_orders(jwt: AuthJWT = Depends()):
 
 @orders_router.get(
 	"/{id}", response_model=OrderPublic, status_code=status.HTTP_200_OK,
-	description="Получить информацию о заказе по id"
+	description="Получить информацию о заказе по id",
+	dependencies=[Depends(get_current_user)]
 )
-async def get_order(id: int, jwt: AuthJWT = Depends()):
-	jwt.jwt_required()
+async def get_order(id: int):
 	order = await Order.get(id)
 	if order is None:
 		raise HTTPException(
@@ -67,10 +66,10 @@ async def get_order(id: int, jwt: AuthJWT = Depends()):
 
 @orders_router.post(
 	"/", status_code=status.HTTP_200_OK,
-	description="Создать новый заказ. Возвращает id заказа"
+	description="Создать новый заказ. Возвращает id заказа",
+	dependencies=[Depends(get_current_user)]
 )
-async def create_order(order: OrderCreate, jwt: AuthJWT = Depends()):
-	jwt.jwt_required()
+async def create_order(order: OrderCreate):
 	try:
 		order_id = await Order.create(order)
 	except ForeignKeyViolationError:
@@ -83,10 +82,10 @@ async def create_order(order: OrderCreate, jwt: AuthJWT = Depends()):
 
 @orders_router.delete(
 	"/{id}", status_code=status.HTTP_200_OK,
-	description="Удалить заказ"
+	description="Удалить заказ",
+	dependencies=[Depends(get_current_user)]
 )
-async def delete_order(id: int, jwt: AuthJWT = Depends()):
-	jwt.jwt_required()
+async def delete_order(id: int):
 	order_id = await Order.delete(id)
 	if order_id is None:
 		return HTTPException(

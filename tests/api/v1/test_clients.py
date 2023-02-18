@@ -12,6 +12,7 @@ TIMEOUT = 5
 ))
 def test_create_nickname(test_client, auth_headers, payload, status_code, response_keys):
 	resp = test_client.post(nicknames_url, json=payload, headers=auth_headers)
+	print(resp.url)
 	assert resp.status_code == status_code, "Не соответствует статус-код ответа"
 	if response_keys is not None:
 		assert list(resp.json().keys()) == response_keys, "Не соответствуют ключи ответа"

@@ -1,9 +1,18 @@
-from pydantic import Field, ValidationError, root_validator
+from pydantic import Field, ValidationError, root_validator, BaseModel
 
 from app.base_schemas import CoreModel, IDModelMixin
 
 PASSWORD_MIN_LENGTH = 5
 PASSWORD_MAX_LENGTH = 64
+
+
+class Token(BaseModel):
+	access_token: str
+	token_type: str
+
+
+class TokenData(BaseModel):
+	username: str
 
 
 class UserBase(CoreModel):

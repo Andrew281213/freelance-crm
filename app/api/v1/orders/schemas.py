@@ -94,7 +94,7 @@ class OrderChangeBase(CoreModel):
 	order_id: int
 	type: ChangeType
 	status: OrderStatus
-	text: str = None
+	text: str | None = None
 
 
 class OrderChangeCreate(OrderChangeBase):

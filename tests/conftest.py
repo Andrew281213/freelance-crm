@@ -22,8 +22,6 @@ def temp_db():
 	try:
 		logger.info("Creating test db")
 		create_database(os.environ.get("TESTING_DATABASE_URL"))
-		# drop_database(os.environ.get("TESTING_DATABASE_URL"))
-		# create_database(os.environ.get("TESTING_DATABASE_URL"))
 		base_dir = os.path.dirname(os.path.dirname(__file__))
 		logger.info(f"{base_dir=}")
 		alembic_cfg = Config(os.path.join(base_dir, "alembic.ini"))
@@ -50,9 +48,10 @@ def auth_headers(test_client):
 	}
 	resp = test_client.post(users_url, json=payload)
 	assert resp.status_code == status.HTTP_200_OK, "Не соответствует статус-код при создании пользователя"
-	resp = test_client.post(users_url + "/login", json=payload)
-	headers = resp.headers.get("set-cookie")
-	assert headers is not None, "Не созданы куки при авторизации"
-	key, val = headers.split(";")[0].split("=")
-	headers = {key: val}
+	resp = test_client.post(users_url + "/token", data=payload)
+	assert resp.status_code == status.HTTP_200_OK, "Не соответствует статус верно введенных данных" + resp.text
+	resp_data = resp.json()
+	headers = {
+		"Authorization": f"{resp_data['token_type']} {resp_data['access_token']}"
+	}
 	yield headers

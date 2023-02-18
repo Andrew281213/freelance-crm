@@ -8,6 +8,7 @@ from starlette import status
 from starlette.responses import JSONResponse
 
 from .api import router as api_router
+from .utils.utils import static_dir
 from .db import db
 from .utils.utils import static_dir
 # from .web import router as web_router

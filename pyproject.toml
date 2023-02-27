@@ -12,7 +12,7 @@ SQLAlchemy = "^1.4.46"
 psycopg2-binary = "^2.9.5"
 databases = {extras = ["postgresql"], version = "^0.7.0"}
 uvicorn = "^0.20.0"
-python-dotenv = "^0.21.0"
+python-dotenv = "^1.0.0"
 loguru = "^0.6.0"
 SQLAlchemy-Utils = "^0.39.0"
 passlib = "^1.7.4"

@@ -6,7 +6,7 @@ authors = ["Andrew281213 <andrey.domakhin8@ya.ru>"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-fastapi = "^0.89.1"
+fastapi = "^0.94.0"
 alembic = "^1.9.2"
 SQLAlchemy = "^1.4.46"
 psycopg2-binary = "^2.9.5"
